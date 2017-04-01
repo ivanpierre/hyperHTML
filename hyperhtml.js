@@ -128,14 +128,19 @@ var hyperHTML = (function () {'use strict';
   //  render`template`;
   // }
   function setAnyContent(node) {
+    var prev;
     return function any(value) {
       switch (typeof value) {
         case 'string':
-          node.innerHTML = value;
+          if (prev !== value) {
+            node.innerHTML = (prev = value);
+          }
           break;
         case 'number':
         case 'boolean':
-          node.textContent = value;
+          if (prev !== value) {
+            node.textContent = (prev = value);
+          }
           break;
         default:
           if (Array.isArray(value)) {
@@ -167,15 +172,20 @@ var hyperHTML = (function () {'use strict';
   function setAttribute(node, attribute) {
     var
       name = attribute.name,
-      isSpecial = SPECIAL_ATTRIBUTE.test(name)
+      isSpecial = SPECIAL_ATTRIBUTE.test(name),
+      prev
     ;
     if (isSpecial) node.removeAttribute(name);
     return isSpecial ?
       function event(value) {
-        node[name] = value;
+        if (prev !== value) {
+          node[name] = (prev = value);
+        }
       } :
       function attr(value) {
-        attribute.value = value;
+        if (prev !== value) {
+          attribute.value = (prev = value);
+        }
       };
   }
 
@@ -243,8 +253,11 @@ var hyperHTML = (function () {'use strict';
   //    ${'spaces around means textContent'}
   //  </p>`;
   function setTextContent(node) {
+    var prev;
     return function text(value) {
-      node.textContent = value;
+      if (prev !== value) {
+        node.textContent = (prev = value);
+      }
     };
   }
 
