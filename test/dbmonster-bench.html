@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="bootstrap.min.css">
     <link rel="stylesheet" href="dbmonster.css">
+    <script src="https://unpkg.com/perf-monitor@0.3.0/dist/umd/perf-monitor.js"></script>
     <script src="./dbmonster100.js"></script>
     <script src="../min.js"></script>
   </head>
@@ -85,37 +86,26 @@
     });
   });
 
+  perfMonitor.startFPSMonitor();
+  perfMonitor.startMemMonitor();
+  perfMonitor.initProfiler('view update');
+
   // update all cells from now on
   setTimeout(function update() {
     requestAnimationFrame(update);
-    getData().forEach((db, i) => {
+    var data = getData();
+    perfMonitor.startProfile('view update');
+    data.forEach((db, i) => {
       var cell = db.topFiveQueries.length * i;
       renderRow[i](db);
       db.topFiveQueries.forEach((query, j) => {
         renderCell[cell + j](query);
       });
     });
-    memBench();
+    perfMonitor.endProfile('view update');
   });
 
   // following unrelated stuff for memory benchmark
 
-  </script>
-  <script>module={exports:{}};</script>
-  <script src="https://unpkg.com/memory-stats@1.0.2/memory-stats.js"></script>
-  <script>
-  var stats;
-  if (window.performance && performance.memory) {
-    stats = new MemoryStats();
-    stats.domElement.style.position = 'fixed';
-    stats.domElement.style.right = '0px';
-    stats.domElement.style.bottom = '0px';
-    document.body.appendChild( stats.domElement );
-  } else {
-    stats = {update: function () {}};
-  }
-  memBench = function () {
-    stats.update();
-  };
   </script>
 </html>
