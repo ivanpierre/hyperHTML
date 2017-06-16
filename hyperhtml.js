@@ -129,7 +129,7 @@ var hyperHTML = (function () {'use strict';
               (i + 1 === length || childNodes[i + 1].nodeType === ELEMENT_NODE)
             ) {
               actions.push(remapping ?
-                {a:'vc', n:child} : setVirtualContent(child));
+                {a:'vc', n:child} : setVirtualContent(child, false));
             } else {
               if (remapping) {
                 actions.push({a:'text', n:child});
@@ -191,6 +191,7 @@ var hyperHTML = (function () {'use strict';
                 for (i = 0, length = value.length; i < length; i++) {
                   value[i] = value[i](node, children, i);
                 }
+                removeNodeList(children, i);
                 any(value.concat.apply([], value));
               } else {
                 i = indexOfDiffereces(node.childNodes, value);
@@ -254,7 +255,7 @@ var hyperHTML = (function () {'use strict';
   //
   // Note: this is the most expensive
   //       update of them all.
-  function setVirtualContent(node) {
+  function setVirtualContent(node, initialize) {
     var
       fragment = frag(node),
       childNodes = []
@@ -284,13 +285,23 @@ var hyperHTML = (function () {'use strict';
               if (type === 'string') {
                 any(value.join(''));
               } else if (type === 'function') {
-                children = slice.call(parentNode.children);
-                if (node.previousElementSibling)
-                  children.splice(0, children.indexOf(node.previousElementSibling) + 1);
+                if (initialize) {
+                  children = slice.call(parentNode.children);
+                  if (node.previousElementSibling)
+                    children.splice(0, children.indexOf(node.previousElementSibling) + 1);
+                } else {
+                  children = childNodes;
+                }
                 for (i = 0, length = value.length; i < length; i++) {
                   value[i] = value[i](parentNode, children, i);
                 }
-                any(value.concat.apply([], value));
+                value = value.concat.apply([], value);
+                if (initialize) {
+                  initialize = false;
+                  childNodes = value;
+                  removeNodeList(children, i);
+                }
+                any(value);
               } else {
                 i = indexOfDiffereces(childNodes, value);
                 if (-1 < i) {
@@ -336,14 +347,14 @@ var hyperHTML = (function () {'use strict';
 
   // given a generic text or comment node
   // remove the surrounding emptiness
-  function cleanAround(textNode, sibling) {
+  function cleanAround(parentNode, textNode, sibling) {
     var adjacent = textNode[sibling];
     if (
       adjacent &&
       adjacent.nodeType === TEXT_NODE &&
       trim.call(adjacent.textContent).length < 1
     ) {
-      textNode.parentNode.removeChild(adjacent);
+      parentNode.removeChild(adjacent);
       cleanAround(textNode, sibling);
     }
   }
@@ -356,10 +367,10 @@ var hyperHTML = (function () {'use strict';
         parentNode = virtual;
         break;
       case COMMENT_NODE:
-        // clean up empty text nodes around
-        cleanAround(virtual, 'previousSibling');
-        cleanAround(virtual, 'nextSibling');
         parentNode = virtual.parentNode;
+        // clean up empty text nodes around
+        cleanAround(parentNode, virtual, 'previousSibling');
+        cleanAround(parentNode, virtual, 'nextSibling');
         map.unshift('childNodes', map.indexOf.call(parentNode.childNodes, virtual));
         break;
       case ATTRIBUTE_NODE:
@@ -397,10 +408,6 @@ var hyperHTML = (function () {'use strict';
 
   function doc(node) {
     return node.ownerDocument || node.document;
-  }
-
-  function svg(node) {
-    return doc(node).createElementNS('http://www.w3.org/2000/svg', 'svg');
   }
 
   // returns a document fragment
@@ -545,6 +552,26 @@ var hyperHTML = (function () {'use strict';
   // create a new wire for generic DOM content
   function wireContent(type) {
     var adopter, content, container, fragment, render, setup, template;
+
+    function before(obj) {
+      fragment = frag(obj);
+      container = type === 'svg' ?
+        doc(fragment).createElementNS('http://www.w3.org/2000/svg', 'svg') :
+        fragment;
+      render = hyperHTML.bind(container);
+    }
+
+    function after() {
+      if (setup) {
+        setup = false;
+        if (type === 'svg') {
+          appendNodes(fragment, slice.call(container.childNodes));
+        }
+        content = setupAndGetContent(fragment);
+      }
+      return content();
+    }
+
     return type === 'adopt' ?
       function adopt(statics) {
         var args = arguments;
@@ -562,16 +589,12 @@ var hyperHTML = (function () {'use strict';
                 };
                 render = hyperHTML.adopt(fragment);
               } else {
-                fragment = frag(parentNode);
-                render = hyperHTML.bind(fragment);
+                if (typeof parentNode.className === 'object') type = 'svg';
+                before(parentNode);
               }
             }
             render.apply(null, args);
-            if (setup) {
-              setup = false;
-              content = setupAndGetContent(fragment);
-            }
-            return content();
+            return after();
           };
         }
         return adopter;
@@ -580,19 +603,10 @@ var hyperHTML = (function () {'use strict';
         if (template !== statics) {
           setup = true;
           template = statics;
-          fragment = frag(hyperHTML);
-          container = type === 'svg' ? svg(fragment) : fragment;
-          render = hyperHTML.bind(container);
+          before(hyperHTML);
         }
         render.apply(null, arguments);
-        if (setup) {
-          setup = false;
-          if (type === 'svg') {
-            appendNodes(fragment, slice.call(container.childNodes));
-          }
-          content = setupAndGetContent(fragment);
-        }
-        return content();
+        return after();
       };
   }
 
@@ -654,7 +668,7 @@ var hyperHTML = (function () {'use strict';
         case 'vc':
           text = doc(node).createComment(uid);
           node.parentNode.replaceChild(text, node);
-          updates[i] = setVirtualContent(text);
+          updates[i] = setVirtualContent(text, true);
           break;
       }
     }
