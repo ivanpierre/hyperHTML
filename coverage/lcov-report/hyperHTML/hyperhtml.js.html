@@ -20,14 +20,14 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88.05% </span>
+        <span class="strong">89.81% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>280/318</span>
+        <span class='fraction'>282/314</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">90.64% </span>
+        <span class="strong">91.63% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>184/203</span>
+        <span class='fraction'>186/203</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">95.74% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>45/47</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">87.82% </span>
+        <span class="strong">89.58% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>274/312</span>
+        <span class='fraction'>275/307</span>
       </div>
     </div>
   </div>
@@ -828,7 +828,8 @@
 783
 784
 785
-786</td><td class="line-coverage quiet"><span class="cline-any cline-yes">2×</span>
+786
+787</td><td class="line-coverage quiet"><span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1387,22 +1388,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1463,6 +1460,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">14×</span>
@@ -1588,12 +1586,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2167,27 +2169,23 @@
 <span class="cstat-no" title="statement not covered" >          setup = true;</span>
 <span class="cstat-no" title="statement not covered" >          template = statics;</span>
 <span class="cstat-no" title="statement not covered" >          adopter = <span class="fstat-no" title="function not covered" >function (parentNode, children, i) {</span></span>
-<span class="cstat-no" title="statement not covered" >            var node, placeholder;</span>
 <span class="cstat-no" title="statement not covered" >            if (setup) {</span>
-<span class="cstat-no" title="statement not covered" >              fragment = frag(parentNode);</span>
-<span class="cstat-no" title="statement not covered" >              container = typeof parentNode.className === 'object' ?</span>
-                            svg(fragment) : fragment;
 <span class="cstat-no" title="statement not covered" >              if (i &lt; children.length) {</span>
-<span class="cstat-no" title="statement not covered" >                placeholder = doc(parentNode).createComment(uid);</span>
-<span class="cstat-no" title="statement not covered" >                node = children[i];</span>
-<span class="cstat-no" title="statement not covered" >                parentNode.replaceChild(placeholder, node);</span>
-<span class="cstat-no" title="statement not covered" >                container.appendChild(node);</span>
-<span class="cstat-no" title="statement not covered" >                render = hyperHTML.adopt(container);</span>
+<span class="cstat-no" title="statement not covered" >                container = children[i];</span>
+<span class="cstat-no" title="statement not covered" >                fragment = {</span>
+                  ownerDocument: container.ownerDocument,
+                  childNodes: [container],
+                  children: [container]
+                };
+<span class="cstat-no" title="statement not covered" >                render = hyperHTML.adopt(fragment);</span>
               } else {
-<span class="cstat-no" title="statement not covered" >                render = hyperHTML.bind(container);</span>
+<span class="cstat-no" title="statement not covered" >                fragment = frag(parentNode);</span>
+<span class="cstat-no" title="statement not covered" >                render = hyperHTML.bind(fragment);</span>
               }
             }
 <span class="cstat-no" title="statement not covered" >            render.apply(null, args);</span>
 <span class="cstat-no" title="statement not covered" >            if (setup) {</span>
 <span class="cstat-no" title="statement not covered" >              setup = false;</span>
-<span class="cstat-no" title="statement not covered" >              if (type === 'svg') {</span>
-<span class="cstat-no" title="statement not covered" >                appendNodes(fragment, slice.call(container.childNodes));</span>
-              }
 <span class="cstat-no" title="statement not covered" >              content = setupAndGetContent(fragment);</span>
             }
 <span class="cstat-no" title="statement not covered" >            return content();</span>
@@ -2238,45 +2236,46 @@
   // given a live node and a tagged template literal
   // finds all needed updates without replacing,
   // at first pass, nodes that were already there
-  function remap() {
+  function remap(statics) {
     remapping = true;
     var
-      i, length, action, node, text,
-      fragment = upgrade.apply(
-        frag(this),
-        arguments
-      ),
-      actions = fragment[EXPANDO].u
+      length, action, node, text,
+      i = knownStatics.indexOf(statics),
+      actions = i &lt; 0 ?
+          upgrade.apply(frag(this), arguments)[EXPANDO].u :
+<span class="branch-1 cbranch-no" title="branch not covered" >          updatesStatics[i],</span>
+      updates = actions.slice()
     ;
     remapping = false;
-    for (i = 0, length = actions.length; i &lt; length; i++) {
-      action = actions[i];
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (i &lt; 0) updatesStatics[knownStatics.push(statics) - 1] = actions;
+    for (i = 0, length = updates.length; i &lt; length; i++) {
+      action = updates[i];
       node = find(this, action.n);
       switch (action.a) {
         case 'any':
-          actions[i] = setAnyContent(node);
+          updates[i] = setAnyContent(node);
           break;
         case 'attr':
-          actions[i] = setAttribute(node.ownerElement, node);
+          updates[i] = setAttribute(node.ownerElement, node);
           break;
         case 'text':
           if (action.n.nodeType === ELEMENT_NODE) {
-            actions[i] = setTextContent(node);
+            updates[i] = setTextContent(node);
           }
           else {
             text = doc(node).createTextNode('');
             node.parentNode.replaceChild(text, node);
-            actions[i] = setTextContent(text);
+            updates[i] = setTextContent(text);
           }
           break;
         case 'vc':
           text = doc(node).createComment(uid);
           node.parentNode.replaceChild(text, node);
-          actions[i] = setVirtualContent(text);
+          updates[i] = setVirtualContent(text);
           break;
       }
     }
-    this[EXPANDO] = fragment[EXPANDO];
+    this[EXPANDO] = {s: statics, u: updates};
     return update.apply(this, arguments);
   }
 &nbsp;
@@ -2367,9 +2366,6 @@
     trim = EXPANDO.trim || function () {
       return this.replace(/^\s+|\s+$/g, '');
     },
-    // convert DOM.childNodes into arrays to avoid
-    // DOM mutation backfiring on loops
-    slice = [].slice,
     // used for weak references
     // if WeakMap is not available
     // it uses a configurable, non enumerable,
@@ -2385,7 +2381,14 @@
         }
       } :
       new WeakMap(),
+    // used to adopt nodes from templates
     remapping = false,
+    knownStatics = [],
+    updatesStatics = [],
+    // convert DOM.childNodes into arrays to avoid
+    // DOM mutation backfiring on loops
+    slice = knownStatics.slice,
+    // used to deal with IE attributes bug
     IEAttributes
   ;
 &nbsp;
@@ -2404,7 +2407,7 @@ try { module.exports = hyperHTML; } catch(o_O) {}
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 16 2017 15:03:13 GMT+0100 (BST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 16 2017 18:14:55 GMT+0100 (BST)
 </div>
 </div>
 <script src="../prettify.js"></script>

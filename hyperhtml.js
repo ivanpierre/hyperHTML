@@ -552,27 +552,23 @@ var hyperHTML = (function () {'use strict';
           setup = true;
           template = statics;
           adopter = function (parentNode, children, i) {
-            var node, placeholder;
             if (setup) {
-              fragment = frag(parentNode);
-              container = typeof parentNode.className === 'object' ?
-                            svg(fragment) : fragment;
               if (i < children.length) {
-                placeholder = doc(parentNode).createComment(uid);
-                node = children[i];
-                parentNode.replaceChild(placeholder, node);
-                container.appendChild(node);
-                render = hyperHTML.adopt(container);
+                container = children[i];
+                fragment = {
+                  ownerDocument: container.ownerDocument,
+                  childNodes: [container],
+                  children: [container]
+                };
+                render = hyperHTML.adopt(fragment);
               } else {
-                render = hyperHTML.bind(container);
+                fragment = frag(parentNode);
+                render = hyperHTML.bind(fragment);
               }
             }
             render.apply(null, args);
             if (setup) {
               setup = false;
-              if (type === 'svg') {
-                appendNodes(fragment, slice.call(container.childNodes));
-              }
               content = setupAndGetContent(fragment);
             }
             return content();
@@ -623,45 +619,46 @@ var hyperHTML = (function () {'use strict';
   // given a live node and a tagged template literal
   // finds all needed updates without replacing,
   // at first pass, nodes that were already there
-  function remap() {
+  function remap(statics) {
     remapping = true;
     var
-      i, length, action, node, text,
-      fragment = upgrade.apply(
-        frag(this),
-        arguments
-      ),
-      actions = fragment[EXPANDO].u
+      length, action, node, text,
+      i = knownStatics.indexOf(statics),
+      actions = i < 0 ?
+          upgrade.apply(frag(this), arguments)[EXPANDO].u :
+          updatesStatics[i],
+      updates = actions.slice()
     ;
     remapping = false;
-    for (i = 0, length = actions.length; i < length; i++) {
-      action = actions[i];
+    if (i < 0) updatesStatics[knownStatics.push(statics) - 1] = actions;
+    for (i = 0, length = updates.length; i < length; i++) {
+      action = updates[i];
       node = find(this, action.n);
       switch (action.a) {
         case 'any':
-          actions[i] = setAnyContent(node);
+          updates[i] = setAnyContent(node);
           break;
         case 'attr':
-          actions[i] = setAttribute(node.ownerElement, node);
+          updates[i] = setAttribute(node.ownerElement, node);
           break;
         case 'text':
           if (action.n.nodeType === ELEMENT_NODE) {
-            actions[i] = setTextContent(node);
+            updates[i] = setTextContent(node);
           }
           else {
             text = doc(node).createTextNode('');
             node.parentNode.replaceChild(text, node);
-            actions[i] = setTextContent(text);
+            updates[i] = setTextContent(text);
           }
           break;
         case 'vc':
           text = doc(node).createComment(uid);
           node.parentNode.replaceChild(text, node);
-          actions[i] = setVirtualContent(text);
+          updates[i] = setVirtualContent(text);
           break;
       }
     }
-    this[EXPANDO] = fragment[EXPANDO];
+    this[EXPANDO] = {s: statics, u: updates};
     return update.apply(this, arguments);
   }
 
@@ -752,9 +749,6 @@ var hyperHTML = (function () {'use strict';
     trim = EXPANDO.trim || function () {
       return this.replace(/^\s+|\s+$/g, '');
     },
-    // convert DOM.childNodes into arrays to avoid
-    // DOM mutation backfiring on loops
-    slice = [].slice,
     // used for weak references
     // if WeakMap is not available
     // it uses a configurable, non enumerable,
@@ -770,7 +764,14 @@ var hyperHTML = (function () {'use strict';
         }
       } :
       new WeakMap(),
+    // used to adopt nodes from templates
     remapping = false,
+    knownStatics = [],
+    updatesStatics = [],
+    // convert DOM.childNodes into arrays to avoid
+    // DOM mutation backfiring on loops
+    slice = knownStatics.slice,
+    // used to deal with IE attributes bug
     IEAttributes
   ;
 
