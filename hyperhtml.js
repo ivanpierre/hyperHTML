@@ -286,22 +286,18 @@ var hyperHTML = (function () {'use strict';
                 any(value.join(''));
               } else if (type === 'function') {
                 if (initialize) {
+                  initialize = false;
                   children = slice.call(parentNode.children);
                   if (node.previousElementSibling)
                     children.splice(0, children.indexOf(node.previousElementSibling) + 1);
+                  childNodes = children;
                 } else {
                   children = childNodes;
                 }
                 for (i = 0, length = value.length; i < length; i++) {
                   value[i] = value[i](parentNode, children, i);
                 }
-                value = value.concat.apply([], value);
-                if (initialize) {
-                  initialize = false;
-                  childNodes = value;
-                  removeNodeList(children, i);
-                }
-                any(value);
+                any(value.concat.apply([], value));
               } else {
                 i = indexOfDiffereces(childNodes, value);
                 if (-1 < i) {
@@ -371,7 +367,10 @@ var hyperHTML = (function () {'use strict';
         // clean up empty text nodes around
         cleanAround(parentNode, virtual, 'previousSibling');
         cleanAround(parentNode, virtual, 'nextSibling');
-        map.unshift('childNodes', map.indexOf.call(parentNode.childNodes, virtual));
+        map.unshift(
+          'childNodes',
+          map.indexOf.call(parentNode.childNodes, virtual)
+        );
         break;
       case ATTRIBUTE_NODE:
       default: // jsdom here does not provide a nodeType 2 ...
@@ -392,10 +391,15 @@ var hyperHTML = (function () {'use strict';
           break;
         case 'childNodes':
           parentNode = live[name][map[i]];
-          if (parentNode) live = parentNode;
-          else {
-            live.textContent = ' ';
-            live = live.firstChild;
+          if (parentNode) {
+            if (parentNode.nodeType === ELEMENT_NODE) {
+              live = doc(live).createComment(uid);
+              parentNode.parentNode.insertBefore(live, parentNode);
+            } else {
+              live = parentNode;
+            }
+          } else {
+            live = live.appendChild(doc(live).createComment(uid));
           }
           break;
         default:
