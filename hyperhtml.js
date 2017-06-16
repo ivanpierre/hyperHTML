@@ -355,8 +355,13 @@ var hyperHTML = (function () {'use strict';
     }
   }
 
+  // returns a document from any node or hyperHTML function
+  function doc(node) {
+    return node.ownerDocument || node.document;
+  }
+
   // find a live node through a virtual one
-  function find(live, virtual) {
+  function find(live, virtual, unknown) {
     var i, length, name, parentNode, map = [];
     switch(virtual.nodeType) {
       case ELEMENT_NODE:
@@ -364,9 +369,11 @@ var hyperHTML = (function () {'use strict';
         break;
       case COMMENT_NODE:
         parentNode = virtual.parentNode;
-        // clean up empty text nodes around
-        cleanAround(parentNode, virtual, 'previousSibling');
-        cleanAround(parentNode, virtual, 'nextSibling');
+        if (unknown) {
+          // clean up empty text nodes around
+          cleanAround(parentNode, virtual, 'previousSibling');
+          cleanAround(parentNode, virtual, 'nextSibling');
+        }
         map.unshift(
           'childNodes',
           map.indexOf.call(parentNode.childNodes, virtual)
@@ -378,10 +385,12 @@ var hyperHTML = (function () {'use strict';
         map.unshift('getAttributeNode', virtual.name);
         break;
     }
-    virtual = parentNode;
-    while (parentNode = parentNode.parentNode) {
-      map.unshift('children', map.indexOf.call(parentNode.children, virtual));
+    for (
       virtual = parentNode;
+      parentNode = parentNode.parentNode;
+      virtual = parentNode
+    ) {
+      map.unshift('children', map.indexOf.call(parentNode.children, virtual));
     }
     for (i = 0, length = map.length; i < length; i++) {
       switch(name = map[i++]) {
@@ -390,13 +399,13 @@ var hyperHTML = (function () {'use strict';
           live = parentNode || {ownerElement: live, name: map[i]};
           break;
         case 'childNodes':
-          parentNode = live[name][map[i]];
-          if (parentNode) {
-            if (parentNode.nodeType === ELEMENT_NODE) {
+          virtual = live[name][map[i]];
+          if (virtual) {
+            if (virtual.nodeType === ELEMENT_NODE) {
               live = doc(live).createComment(uid);
-              parentNode.parentNode.insertBefore(live, parentNode);
+              virtual.parentNode.insertBefore(live, virtual);
             } else {
-              live = parentNode;
+              live = virtual;
             }
           } else {
             live = live.appendChild(doc(live).createComment(uid));
@@ -408,10 +417,6 @@ var hyperHTML = (function () {'use strict';
       }
     }
     return live;
-  }
-
-  function doc(node) {
-    return node.ownerDocument || node.document;
   }
 
   // returns a document fragment
@@ -640,18 +645,19 @@ var hyperHTML = (function () {'use strict';
   function remap(statics) {
     remapping = true;
     var
-      length, action, node, text,
+      length, action, node, // text,
       i = knownStatics.indexOf(statics),
-      actions = i < 0 ?
+      unknown = i < 0,
+      actions = unknown ?
           upgrade.apply(frag(this), arguments)[EXPANDO].u :
           updatesStatics[i],
       updates = actions.slice()
     ;
     remapping = false;
-    if (i < 0) updatesStatics[knownStatics.push(statics) - 1] = actions;
+    if (unknown) updatesStatics[knownStatics.push(statics) - 1] = actions;
     for (i = 0, length = updates.length; i < length; i++) {
       action = updates[i];
-      node = find(this, action.n);
+      node = find(this, action.n, unknown);
       switch (action.a) {
         case 'any':
           updates[i] = setAnyContent(node);
@@ -664,15 +670,20 @@ var hyperHTML = (function () {'use strict';
             updates[i] = setTextContent(node);
           }
           else {
+            /* TODO: remove these once sure are not needed
             text = doc(node).createTextNode('');
             node.parentNode.replaceChild(text, node);
-            updates[i] = setTextContent(text);
+            */
+            updates[i] = setTextContent(node);
           }
           break;
         case 'vc':
+          /* TODO: remove these once sure are not needed
           text = doc(node).createComment(uid);
           node.parentNode.replaceChild(text, node);
           updates[i] = setVirtualContent(text, true);
+          */
+          updates[i] = setVirtualContent(node, true);
           break;
       }
     }
@@ -721,6 +732,9 @@ var hyperHTML = (function () {'use strict';
   // -------------------------
 
   var
+    // why not using Node ?
+    // Because hyperHTML is compatible with backend and native environments too.
+    // The least we assume browser globals, the better 😉
     ELEMENT_NODE = 1,
     ATTRIBUTE_NODE = 2,
     TEXT_NODE = 3,
@@ -742,9 +756,11 @@ var hyperHTML = (function () {'use strict';
       return /class/i.test(p.firstChild.attributes[0].name);
     }(
       // beside the initial feature detection
-      // the document could be swap-able at runtime
+      // the document could be swap-able at runtime (nativeHTML)
       (hyperHTML.document = document).createElement('p'))
     ),
+    // TODO: verify one single append of many nodes
+    //       is actually faster than appendChild in loop
     appendNodes = 'append' in document ?
       function (node, childNodes) {
         node.append.apply(node, childNodes);
