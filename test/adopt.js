@@ -1,5 +1,5 @@
 var wrap = document.body.appendChild(document.createElement('div'));
-wrap = document.createElement('div');
+// wrap = document.createElement('div');
 wrap.innerHTML = '<div test="before"> before <ul><li> lonely </li></ul>NO<hr></div>';
 
 var div = wrap.firstElementChild;
@@ -22,7 +22,9 @@ function update(render, model) {
   <div test="${model.test}">
     ${model.text}
     <ul>${
-      model.list.map(item => `<li> ${item.name} </li>`)
+      model.list.map(item => hyperHTML.wire(item, 'adopt')`
+        <li> ${item.name} </li>
+      `)
     }</ul>${
       model.inBetween
     }<hr>
