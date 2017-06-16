@@ -7,13 +7,18 @@ require('jsdom').env(
     global.hyperHTML = require('../hyperhtml.js');
     require('./test.js');
     setTimeout(function () {
+      delete require.cache[require.resolve('../hyperhtml.js')];
+      delete require.cache[require.resolve('./test.js')];
+      Object.defineProperty(
+        document.createElement('svg').constructor.prototype,
+        'className',
+        {get: function () { return {}; }}
+      );
       Object.prototype.append = function () {
         [].forEach.call(arguments, this.appendChild, this);
       };
       Object.prototype.nodeType = 2;
       global.String.prototype.trim = global.WeakMap = void 0;
-      delete require.cache[require.resolve('../hyperhtml.js')];
-      delete require.cache[require.resolve('./test.js')];
       // fake initial feature detection
       var createElement = global.document.createElement;
       var templates = 0;

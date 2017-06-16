@@ -321,6 +321,73 @@ tressa.async(function (done) {
   }
 })
 .then(function () {
+  tressa.log('## hyperHTML.wire(node, "adopt")');
+  var wrap = document.createElement('div');
+  wrap.innerHTML = '<div test="before"> before <ul><li> lonely </li><li> lonely </li></ul>NO<hr></div>';
+
+  var div = wrap.firstElementChild;
+  var text = div.firstChild;
+  var ul = div.firstElementChild;
+  var li0 = ul.firstElementChild;
+  var li1 = li0.nextElementSibling;
+  var hr = div.lastElementChild;
+  var render = hyperHTML.adopt(wrap);
+  var model = {
+    test: 'after',
+    text: 'after',
+    list: [
+      {name: 'first'},
+      {name: 'second'},
+      {name: 'third'}
+    ],
+    inBetween: 'OK'
+  };
+
+  update(render, model);
+  tressa.assert(
+    li0 === ul.firstElementChild &&
+    li1 === li0.nextElementSibling,
+    'nodes were preserved'
+  );
+
+  model.list.push({name: 'fourth'});
+  update(render, model);
+
+  tressa.assert(
+    li0 === ul.firstElementChild &&
+    li1 === li0.nextElementSibling,
+    'even after updates'
+  );
+
+  tressa.assert(
+    ul.innerHTML === '<li>first</li><li>second</li><li> third </li><li> fourth </li>',
+    'all content is there'
+  );
+
+  function update(render, model) {
+    render`
+    <div test="${model.test}">
+      ${model.text}
+      <ul>${
+        model.list.map(item => hyperHTML.wire(item, 'adopt')`
+          <li> ${item.name} </li>
+        `)
+      }</ul>${
+        model.inBetween
+      }<hr>
+    </div>
+    `;
+  }
+})
+.then(function () {
+  var wrap = document.createElement('div');
+  wrap.innerHTML = '<svg><g index="0"></g></sgv>';
+  var outer = hyperHTML.adopt(wrap);
+  outer`<svg>${[{}, {}].map(function (item, i) {
+    return hyperHTML.wire(item, 'adopt')`<g index="${i}"></g>`;
+  })}</sgv>`;
+})
+.then(function () {
   tressa.log('## for code coverage sake');
   let wrap = document.createElement('div');
   let result = hyperHTML.wire()`<!--not hyprHTML-->`;
