@@ -8,51 +8,69 @@ var hyperHTML = (function (globalDocument) {'use strict';
 
   // The document must be swap-able at runtime.
   // Needed by both basicHTML and nativeHTML
-  hyperHTML.document = globalDocument;
+  hyper.document = globalDocument;
 
-  // hyperHTML.bind(el) ⚡️
-  function hyperHTML(template) {
-    var hyper = hypers.get(this);
-    if (
-      !hyper ||
-      hyper.template !== (FF ? unique(template) : template)
-    ) {
-      hyper = upgrade.apply(this, arguments);
-      hypers.set(this, hyper);
+  // friendly destructuring
+  hyper.hyper = hyper;
+
+  function hyper(HTML) {
+    switch (arguments.length) {
+      case 0:
+      case 1:   return HTML == null ?
+                  wireContent('html') :
+                  (typeof HTML === 'string' ?
+                    wire(null, HTML) :
+                    ('raw' in HTML ?
+                      wireContent('html')(HTML) :
+                      ('nodeType' in HTML ?
+                        bind(HTML) :
+                        wireWeakly(HTML, 'html')
+                      )
+                    )
+                  );
+      default:  return ('raw' in HTML ?
+                  wireContent('html') : wire
+                ).apply(null, arguments);
     }
-    update.apply(hyper.updates, arguments);
-    return this;
   }
 
   // hyperHTML.adopt(el) 🐣
-  hyperHTML.adopt = function adopt(node) {
+  // import an already live DOM structure
+  // described as TL
+  hyper.adopt = function adopt(node) {
     return function () {
       notAdopting = false;
-      hyperHTML.apply(node, arguments);
+      render.apply(node, arguments);
       notAdopting = true;
       return node;
     };
   };
 
+  // hyperHTML.bind(el) ⚡️
+  // render TL inside a DOM node used as context
+  hyper.bind = bind;
+  function bind(context) { return render.bind(context); }
+
   // hyperHTML.define('transformer', callback) 🌀
-  hyperHTML.define = function define(transformer, callback) {
+  hyper.define = function define(transformer, callback) {
     transformers[transformer] = callback;
   };
 
   // hyperHTML.escape('<html>') => '&lt;text&gt;' 🏃
-  hyperHTML.escape = function escape(html) {
+  hyper.escape = function escape(html) {
     return html.replace(reEscape, fnEscape);
   };
 
   // hyperHTML.wire(obj, 'type:ID') ➰
-  hyperHTML.wire = function wire(obj, type) {
+  hyper.wire = wire;
+  function wire(obj, type) {
     return arguments.length < 1 ?
       wireContent('html') :
       (obj == null ?
         wireContent(type || 'html') :
         wireWeakly(obj, type || 'html')
       );
-  };
+  }
 
   // - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -152,6 +170,20 @@ var hyperHTML = (function (globalDocument) {'use strict';
   // ---------------------------------------------
   // hyperHTML Operations
   // ---------------------------------------------
+
+  // entry point for all TL => DOM operations
+  function render(template) {
+    var hyper = hypers.get(this);
+    if (
+      !hyper ||
+      hyper.template !== (FF ? unique(template) : template)
+    ) {
+      hyper = upgrade.apply(this, arguments);
+      hypers.set(this, hyper);
+    }
+    update.apply(hyper.updates, arguments);
+    return this;
+  }
 
   // `<div class="${'attr'}"></div>`
   // `<div onclick="${function () {... }}"></div>`
@@ -839,14 +871,6 @@ var hyperHTML = (function (globalDocument) {'use strict';
         }
       };
 
-  // redefine bind to always point at hyperHTML
-  // (useful in destructuring)
-  hyperHTML.bind = function (context) {
-    return function () {
-      return hyperHTML.apply(context, arguments);
-    };
-  };
-
   // returns children or retrieve them in IE/Edge
   var getChildren = WK || IE ?
       function (node) {
@@ -1093,7 +1117,7 @@ var hyperHTML = (function (globalDocument) {'use strict';
       container = type === 'svg' ?
         document.createElementNS(SVG_NAMESPACE, 'svg') :
         fragment;
-      render = hyperHTML.bind(container);
+      render = bind(container);
     }
 
     function after() {
@@ -1123,7 +1147,7 @@ var hyperHTML = (function (globalDocument) {'use strict';
                   childNodes: [container],
                   children: [container]
                 };
-                render = hyperHTML.adopt(fragment);
+                render = hyper.adopt(fragment);
               } else {
                 if (OWNER_SVG_ELEMENT in parentNode) type = 'svg';
                 before(parentNode.ownerDocument);
@@ -1140,7 +1164,7 @@ var hyperHTML = (function (globalDocument) {'use strict';
         if (template !== statics) {
           setup = true;
           template = statics;
-          before(hyperHTML.document);
+          before(hyper.document);
         }
         render.apply(null, arguments);
         return after();
@@ -1166,7 +1190,7 @@ var hyperHTML = (function (globalDocument) {'use strict';
   // ---------------------------------------------
   // ⚡️ ️️The End ➰
   // ---------------------------------------------
-  return hyperHTML;
+  return hyper;
 
 }(document));
 
